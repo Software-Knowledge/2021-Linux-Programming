@@ -6,14 +6,15 @@ Lec1-Linux Basics
    1. 开源
    2. 受欢迎
    3. 支持大多数可用平台
+2. GPL协议
 
 ## 1.1. Linux的简短历史
 1. Multics：美国麻省理工学院，美国电话电报公司贝尔实验室
 2. UNIX：1969年，肯·汤普森，丹尼斯·里奇
 3. 使用C重写UNIX：1973
 4. BSD：1978年，伯克利软件发行公司
-5. 系统V：1983年
-6. 最小：1987年，安德鲁·坦嫩鲍姆(Andrew Tannenbaum)
+5. System V：1983年
+6. Minix(可以编译运行并且源代码量比较小的系统)：1987年，安德鲁·坦嫩鲍姆(Andrew Tannenbaum)
 7. 商业产品：SunOS，Solaris，HP-UX，AIX，SCO UNIX
 8. 标准：SVID，IEEE POSIX，X / Open XPG4.2
 
@@ -88,12 +89,13 @@ Lec1-Linux Basics
 
 ![](img/lec1/4.png)
 
-1. hda：磁盘的第一个扇区包含MBR和分区表
+1. hda：磁盘的第一个扇区包含MBR和分区表(早期的都是MBR组织的，后面使用了GPT(使用GUID分区表))
 2. hda1：第一个主分区包含Windows 95文件系统
 3. hda2：第二主分区是扩展分区，拥有三个逻辑分区
 4. hda5：第一个逻辑分区包含一个Linux文件系统，该文件系统将被安装为/
 5. hda6：第二个逻辑分区包含一个Linux文件系统，该文件系统将挂载为/home
 6. hda7：第三个逻辑分区拥有一个Linux交换空间
+7. 上图中表示是一个双系统，所以同时有windows和linux
 
 ## 2.2. 主引导记录
 1. 大小：512字节(hd的第一个扇区)
