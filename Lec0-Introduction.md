@@ -26,4 +26,8 @@ Lec0-Introduction
    2. 后继：嵌入式系统，分布式系统，网络编程……
 2. 实践性强，涉及面广
 3. 侧重点：基本原理、关键技术、应用实例
+4. 建议安装Linux:Ubuntu
+5. 虚拟机和实体机的差别(主要差别)：计时任务不是很准确
+6. 关系比较密切的书：Beginning Linux Programming, 3rd/4thedition, Neil Matthew, Richard Stones, Wiley Publishing, Inc.
+
 
