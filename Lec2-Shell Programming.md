@@ -113,13 +113,17 @@ echo -n "Enter your name: "       # 参数-n的作用是不换行，echo默认�
 read name                         #从键盘输入
 echo "hello $name, welcome to my program"
 exit 0                            #退出shell程序。
+```
+```SH
+read -p "Enter your name:" name   #-p参数，允许在read命令行中直接指定一个提示
 
-read -P "Enter your name:" name   #-p参数，允许在read命令行中直接指定一个提示
-
-read -P "Enter a number"
-echo $REPLY
-
+read -p "Enter a number:" number
+echo $number
+exit 0
+```
+```sh
 #! /bin/bash
+# 5s内输入
 if read -t 5 -p "please enter your name:" name
 then
   echo "hello $name， welcome to my script"
@@ -127,9 +131,11 @@ else
   echo "sorry, too slow"
 fi
 exit 0
-
+```
+```sh
 #! /bin/bash
-read -n1 -p "DO you want to continue[ Y/N] ?"answer
+# 只读取一个字符
+read -n1 -p "DO you want to continue[ Y/N] ?" answer
 case $answer in
 Y|y)
   echo "fine, continue";;
@@ -139,19 +145,24 @@ N|n)
   echo "error choice";;
 esac
 exit 0
+```
 
+```sh
 #! /bin/bash
+# 不显示输入
 read -s -p "Enter your password: " pass
 echo "your password is $pass"
 exit 0
-
+```
+```sh
 #! /bin/bash
-count=l
-cat dat| while read line
+count=1
+cat viewFile.sh| while read line
 do
   echo "Scount:$line"
   count=$(($count + 1))
 done
+echo "Total Count:$count"
 exit 0
 ```
 
@@ -162,19 +173,16 @@ exit 0
 ## 2.7. 环境变量
 1. 环境变量：Shell环境提供的变量。通常使用大写字母做名字
 
-![](img/lec2/5.png)
-
-
-| 环境变量 | 说明                                                         |
-| -------- | ------------------------------------------------------------ |
-| $HOME    | 当前用户的登陆目录                                           |
-| $PATH    | 以冒号分隔的用来搜索命令的目录清单                           |
-| $PS1     | 命令行提示符，通常是”$”字符                                  |
-| $PS2     | 辅助提示符，用来提示后续输入，通常是”>”字符                  |
+| 环境变量 | 说明                                                                                                  |
+| -------- | ----------------------------------------------------------------------------------------------------- |
+| $HOME    | 当前用户的登陆目录                                                                                    |
+| $PATH    | 以冒号分隔的用来搜索命令的目录清单                                                                    |
+| $PS1     | 命令行提示符，通常是”$”字符                                                                           |
+| $PS2     | 辅助提示符，用来提示后续输入，通常是”>”字符                                                           |
 | $IFS     | 输入区分隔符。当shell读取输入数据时会把一组字符看成是单词之间的分隔符，通常是空格、制表符、换行符等。 |
 
-2. env：显示全部环境变量
-3. set：设置环境变量
+1. env：显示全部环境变量
+2. set：设置环境变量
 
 
 ```shell
@@ -183,18 +191,16 @@ sed 's/ A  /  B /g' code1.cpp
 ```
 
 ## 2.8. 参数变量和内部变量
-1. 调用脚本程序时如果带有参数，对应的参数和额外产生的一
-些变量。
+1. 调用脚本程序时如果带有参数，对应的参数和额外产生的一些变量。
 
-![](img/lec2/6.png)
 
-| 环境变量  | 说明                                                         |
-| --------- | ------------------------------------------------------------ |
-| $＃       | 传递到脚本程序的参数个数                                     |
-| $0        | 脚本程序的名字                                               |
-| $1, $2, … | 脚本程序的参数                                               |
-| $*        | 一个全体参数组成的清单，它是一个独立的变量，各个参数之间用环境变量IFS中的第一个字符分隔开 |
-| $@        | “$*”的一种变体，它不使用IFS环境变量。                        |
+| 环境变量      | 说明                                                                                      |
+| ------------- | ----------------------------------------------------------------------------------------- |
+| `$#`          | 传递到脚本程序的参数个数                                                                  |
+| `$0`          | 脚本程序的名字                                                                            |
+| `$1`, `$2`, … | 脚本程序的参数                                                                            |
+| `$*`          | 一个全体参数组成的清单，它是一个独立的变量，各个参数之间用环境变量IFS中的第一个字符分隔开 |
+| `$@`          | “$*”的一种变体，它不使用IFS环境变量。                                                     |
 
 ## 2.9. 条件测试
 1. 退出码
@@ -206,7 +212,6 @@ sed 's/ A  /  B /g' code1.cpp
    4. 逻辑操作
 
 ## 2.10. 字符串比较
-![](img/lec2/7.png)
 
 | 字符串比较  | 结果                       |
 | ----------- | -------------------------- |
@@ -216,7 +221,6 @@ sed 's/ A  /  B /g' code1.cpp
 | -n str      | 字符串不为空则结果为真     |
 
 ## 2.11. 算术比较
-![](img/lec2/8.png)
 
 | 算术比较        | 结果                             |
 | --------------- | -------------------------------- |
@@ -228,7 +232,6 @@ sed 's/ A  /  B /g' code1.cpp
 | expr1 –le expr2 | expr1 小于或等于expr2 则结果为真 |
 
 ## 2.12. 与文件有关的条件测试
-![](img/lec2/9.png)
 
 | 文件条件测试 | 结果                         |
 | ------------ | ---------------------------- |
@@ -241,7 +244,6 @@ sed 's/ A  /  B /g' code1.cpp
 | -x file      | 文件可执行则结果为真         |
 
 ## 2.13. 逻辑操作
-![](img/lec2/10.png)
 
 | 逻辑操作       | 结果                        |
 | -------------- | --------------------------- |
@@ -405,11 +407,11 @@ done
 clear
 select item in Continue Finish
 do
-case "$item" in
-Continue) ;;
-Finish) break ;;
-*) echo "Wrong choice! Please select again!" ;;
-esac
+  case "$item" in
+    Continue) ;;
+    Finish) break ;;
+    *) echo "Wrong choice! Please select again!" ;;
+  esac
 done
 ```
 

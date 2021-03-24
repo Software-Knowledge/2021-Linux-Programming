@@ -72,7 +72,6 @@ Lec1-Linux Basics
    3. SuSe
    4. Mandrake
    5. Ubuntu
-   6. ……
 2. Live CD
 3. Using virtual machine：VMware, Virtual Box, etc.
 
@@ -190,8 +189,7 @@ Lec1-Linux Basics
 2. 从非易失性存储器中加载选项
    1. 内存时序
    2. 启动设备顺序
-3. 检查启动设备
-   1. 软盘，CD-ROM，硬盘等
+3. 检查启动设备：软盘，CD-ROM，硬盘等
 4. 加载启动设备的MBR并执行
 
 ![](img/lec1/7.png)
@@ -292,8 +290,8 @@ chainloader +1
 2. 示例：
    1. `$ ls`
    2. `$ ls –l`
-   3. `$ ls / dev`
-   4. `$ ls –l / dev`
+   3. `$ ls /dev`
+   4. `$ ls –l /dev`
 
 ## 3.5. 一些基本的Linux命令
 1. passwd：更改密码
@@ -584,12 +582,12 @@ find . -name '*.c' | grep
    1. 操作环境的参数
    2. 查看和设置环境变量：echo, env, set
 2. 例: PATH环境变量
-   1. `·`echo $PATH`
+   1. `echo $PATH`
    2. `/usr/local/bin:/bin:/usr/bin:/usr/X11R6/bin:/home/song/bin`
    3. `PATH=$PATH:.`
    4. `export PATH`
 
 # 11. 高级命令与正则表达式
 1. find
-2. sed：sed 's/\([0-9A-Za-z_]\{1,\}\)\[ \{0,\}\]\[ \{0,\}\]/*\1\[\]/g' code1.cpp
+2. sed：`sed 's/\([0-9A-Za-z_]\{1,\}\)\[ \{0,\}\]\[ \{0,\}\]/*\1\[\]/g' code1.cpp`
 3. grep
