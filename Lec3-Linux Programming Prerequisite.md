@@ -583,12 +583,15 @@ int creat(const char *pathname, mode_t mode);
 
 ![](img/lec3/16.png)
 
-3. mode参数和umask
-   1. umask：文件保护机制
-   2. 新文件的初始访问方式
-      1. mode和~umask
+3. 需要多个权限的话，也是按位或。`S_IRUSR|S_IWUSR`就表示`rw-`。
+4. 注意这里的权限是**4位八进制数**。
 
-#### 10.4.1.6. close 函数
+### 10.4.2. mode参数和umask
+1. umask：文件保护机制
+2. 新文件的初始访问方式
+   1. mode和~umask
+
+#### 10.4.2.1. close 函数
 1. 选择一个文件描述符
 
 ```c++
@@ -597,7 +600,9 @@ int close(int fd);
 //(Return: 0 if success; -1 if failure)
 ```
 
-#### 10.4.1.7. read/write 函数
+2. 注意**打开的文件一定要关闭**
+
+#### 10.4.2.2. read/write 函数
 1. Read from a file descriptor
 
 ```c++
@@ -616,7 +621,6 @@ ssize_t write(int fd, const void *buf, size_t count);
 
 3. 例子
 ```c++
-
 while ((n = read(STDIN_FILENO, buf, BUFSIZE)) > 0)
    if (write(STDOUT_FILENO, buf, n) != n)
       err_sys("write‏error");
@@ -624,7 +628,7 @@ while ((n = read(STDIN_FILENO, buf, BUFSIZE)) > 0)
       err_sys("read‏error");
 ```
 
-#### 10.4.1.8. lseek函数
+#### 10.4.2.3. lseek函数
 1. 重定义读写文件偏移量
 
 ```c++
@@ -639,7 +643,7 @@ off_t lseek(int fildes, off_t offset, int whence);
    2. SEEK_CUR: the offset is set to its current location plus "offset"‏bytes
    3. SEEK_END:‏the‏offset‏if‏set‏to‏the‏size‏of‏the‏file‏plus‏"offset"‏ bytes
 
-#### 10.4.1.9. dup/dup2函数
+#### 10.4.2.4. dup/dup2函数
 1. Duplicate a file descriptor
 
 ```c++
@@ -648,9 +652,20 @@ int dup(int oldfd);
 int dup2(int oldfd, int newfd);
 //(Return: the new file descriptor if success; -1 if failure)
 ```
-2. File sharing，Example: redirection
+2. File sharing，Example: **redirection**
+3. 用在重定向中
+   1. ls：本质就是对1号文件描述符写数据(无论是printf还是cout)
+   2. 将原来1号文件描述符从控制台输出转到其他文件中
+   3. 打开一个文件，就会有一个文件描述符(例如是3号文件描述符)，使用dup2系统调用，就可以实现了。
 
-#### 10.4.1.10. fcntl 函数
+```c
+dup2(1, 1000);
+fd=open("aaa.txt", ...);
+dup2(fd, 1);//使用打开文件的文件描述符覆盖1号的，进行重定向
+dup(1000, 1);//当重定向好了之后将1000号覆盖掉1号
+```
+
+#### 10.4.2.5. fcntl 函数
 1. Manipulate a file descriptor
 
 ```c++
@@ -658,36 +673,57 @@ int dup2(int oldfd, int newfd);
 #include <fcntl.h>
 int fcntl(int fd, int cmd);
 int fcntl(int fd, int cmd, long arg);
-int fcntl(int fd, int cmd, struct flock *lock);
+int fcntl(int fd, int cmd, struct flock *lock);//可以对文件加锁
 //(返回值: 若成功则依赖于cmd，若出错为-1)
 ```
 2. The‏ operation‏ is‏ determined ‏by‏"cmd".
 3. The‏ value‏ of‏"cmd"
-   1. F_DUPFD: Duplicate a file descriptor
-   2. F_GETFD/F_SETFD:‏Get/set‏the‏file‏descriptor‟s‏close-onexec flag.
-   3. F_GETFL/F_SETFL:‏Get/set‏the‏file‏descriptor‟s‏flags
-   4. F_GETOWN/F_SETOWN: Manage I/O availability signals
-   5. F_GETLK/F_SETLK/F_SETLKW: Get/set the file lock
+   1. **F_DUPFD**: Duplicate a file descriptor
+   2. **F_GETFD/F_SETFD**:‏Get/set ‏the‏ file‏d escriptor's
+   3. **‏close-on exec** flag：执行时是否关闭，文件描述符能否从父进程传递到子进程。
+   4. F_GETFL/F_SETFL:‏Get/set ‏the‏ file ‏descriptor's **‏flags**(并不是所有情况都可以setfl的)
+   5. F_GETOWN/F_SETOWN: Manage I/O availability signals(告诉当前进程是否I/O传来的信号)(不要求理解深刻)
+   6. F_GETLK/F_SETLK/F_SETLKW: Get/set the file lock(暂时不讲)
 4. Example：dup/dup2 and fcntl
+5. fcntl对于文件描述符的操作很全面
 
 ![](img/lec3/17.png)
+
+1. pid保存进程id(可以理解为int类型，linux下做了类型的重定义)
+2. `if(fd == -1)`：异常处理(文件打开失败)
+3. `fcntl(fd, F_SETFD, 1);`这里将**close-on-exec** flag设置为true，所以**调用execl的时候，fd会关闭**。
+4. `fork()`：Linux下很特别的系统调用，是用来创建进程的；复制一份父进程，作为父进程的子进程。(注意：被启动的子进程，就从fork()之后继续执行；子进程并不重复执行，某种程度上子进程和父进程是完全一样的；只有fork()系统调用的返回值不一样)
+5. 父进程fork()函数的返回值就是子进程的pid，而子进程fork()函数的返回值是0。
+6. 子进程是复制了父进程，所以这里子进程有fd这个文件描述符。
+7. exec系列函数的使用
+   1. **用另外一个程序代替当前进程，不会新开进程**(用当前进程执行新的程序)
+   2. 启动一段新的程序，将新程序的内存覆盖掉当前进程的内存。
+   3. 如果没有fork就执行execl，则当前shell的进程没有了(呗新的程序占用了)
+8. 注意：
+   1. 这里是`pid==0`，才会执行execl。所以是**子进程执行了这个execl**。
+   2. `execl("ass", "./ass", &fd, NUKK)`：传递的是fd所在地址，这里是int类型的地址，而execl函数要求的传输类型是char类型的地址，所以这里是类型转换。(但是这里的fd的值不能太大，因为是按照char类型读取的，所以fd的值在128以内应该没有问题)
+   3. `wait(NULL)`：父进程就在这里等待，知道子进程执行完ass
+   4. 最后的执行结果：test.txt文件中只会有"ooooo"，不会有"zzzzz"
+
 ![](img/lec3/18.png)
 
-#### 10.4.1.11. ioctl Function
+#### 10.4.2.6. ioctl Function
 1. Control devices
 ```c++
 #include <sys/ioctl.h>
 int ioctl(int d, int request, ...);
 ```
 
-### 10.4.2. 标准I/O库
+1. 更改一种特殊类型的文件(块类型和字符类型的设备)
+
+### 10.4.3. 标准I/O库
 1. 文件系统
 2. 标准I/O函数
 
-### 10.4.3. 文件流
+### 10.4.4. 文件流
 1. 流和文件结构
    1. `FILE * fp;`
-   2. 预定义指针：`stdin, stdout, stderr`
+   2. 预定义指针：`stdin, stdout, stderr`(封装了012号文件描述符)
 2. 缓冲I/O
    1. 三类缓冲区
       1. 全缓冲区
@@ -695,7 +731,7 @@ int ioctl(int d, int request, ...);
       3. 无缓冲区
    2. setbuf/setvbuf函数
 
-### 10.4.4. 流缓冲操作
+### 10.4.5. 流缓冲操作
 1. 三种缓冲
    1. 块缓冲（完全缓冲）
    2. 线缓冲
@@ -707,7 +743,11 @@ void setbuf(FILE *stream，char * buf);
 int setvbuf(FILE *stream，char * buf, int mode, size_t size); // 类型: _IOFBF 满缓冲 _IOLBF 行缓冲 _IONBF 无缓冲
 ```
 
-### 10.4.5. 标准I/O函数
+1. 补充：
+   1. setbuf用于打开或关闭流缓冲机制，参数buf指向一个长度为BUFSIZ（该常量在<stdio.h>中定义）的缓冲区；如果要关闭缓冲，则将buf设置为NULL即可。
+   2. setvbuf用于精确地设置所需的缓冲类型，mode取值如下：_IOFBF(全缓冲)/_IOLBF(行缓冲)/_IONBF(无缓冲)；如果指定了mode为带缓冲类型，而buf却为NULL，则系统会自动分配BUFSIZ个字节的缓冲区。
+
+### 10.4.6. 标准I/O函数
 1. Stream open/close
 2. Stream read/write
    1. 每次一个字符的I/O
@@ -717,7 +757,7 @@ int setvbuf(FILE *stream，char * buf, int mode, size_t size); // 类型: _IOFBF
 3. Stream reposition
 4. Stream flush
 
-#### 10.4.5.1. Stream open/close
+#### 10.4.6.1. Stream open/close
 1. Open a stream
 ```c++
 #include <stdio.h>
@@ -725,12 +765,12 @@ FILE *fopen(const char *filename, const char *mode);
 int fclose(FILE *stream);
 ```
 2. Parameter‏"mode"
-   1. "r": Open text file for reading.
+   1. "r": Open text file for **reading**.
    2. "w": Truncate file to zero length or create text file for writing.
-   3. "a": Open for appending.
-   4. "r+": Open for reading and writing.
-   5. "w+": Open for reading and writing. The file is created if it does not exist, otherwise it is truncated.
-   6. "a+": Open for reading and appending. The file is created if does not exist.
+   3. "a": Open for **appending**(追加).
+   4. "r+": Open for **reading and writing**.
+   5. "w+": Open for reading and writing. The file is created if it does not exist, **otherwise it is truncated**.
+   6. "a+": Open for **reading and appending**. The file is created if does not exist.
 3. Close a stream
 ```c++
 #include <stdio.h>
@@ -738,7 +778,7 @@ int fclose(FILE *fp);
 // (Return: 0 if success; -1 if failure)
 ```
 
-#### 10.4.5.2. 输入字符
+#### 10.4.6.2. 输入字符
 1. getc, fgetc, getchar functions
 
 ```c++
@@ -751,7 +791,7 @@ int getchar(void);
 2. Three functions:ferror, feof, clearerr
 3. ungetc function: push a character back to a stream.
 
-#### 10.4.5.3. 输出字符
+#### 10.4.6.3. 输出字符
 1. putc, fputc, putchar functions
 
 ```c++
@@ -762,7 +802,7 @@ int putchar(int c);
 // (Return: the character if success; -1 if failure)
 ```
 
-#### 10.4.5.4. 一行字符串输入
+#### 10.4.6.4. 一行字符串输入
 1. fgets, gets functions
 ```c++
 #include <stdio.h>
@@ -771,7 +811,7 @@ char *gets(char *s); //not recommended.
 ```
 2. fgets: reads in at most **size-1** characters from stream and stores them into the buffer pointed by s. **Reading stops after an EOF or a new line**. A "\0" character is stored at the end of the buffer
 
-#### 10.4.5.5. 一行字符串输出
+#### 10.4.6.5. 一行字符串输出
 1. fputs, puts functions
 
 ```c++
@@ -780,7 +820,7 @@ int fputs(const char *s, FILE *stream);
 int puts(const char *s);
 ```
 
-### 10.4.6. Question: I/O Efficiency
+### 10.4.7. Question: I/O Efficiency
 1. Rewrite mycat.c
    1. read/write version
    2. getc/putc version
@@ -829,7 +869,7 @@ int main(void){
 
 ![](img/lec3/20.png)
 
-#### 10.4.6.1. 二进制流输入/输出
+#### 10.4.7.1. 二进制流输入/输出
 1. fread/fwrite functions
 
 ```c++
@@ -858,18 +898,19 @@ if ( fwrite(&item, sizeof(item), 1, fp) != 1)
    err_sys("fwrite‏error");
 ```
 
-#### 10.4.6.2. 格式化I/O
+#### 10.4.7.2. 格式化I/O
 1. scanf, fscanf, sscanf functions
 
 ```c++
 #include <stdio.h>
 int scanf(const char *format, ...);
 int fscanf(FILE *stream, const char *format, ...);
-int sscanf(const char *str, const char *format, ...);
+int sscanf(const char *str, const char *format, ...);// 将str所指向的字符串，按照format进行提取
 ```
 
-2. Use fgets, then parse the string.
-3. printf, fprintf, sprintf functions
+2. 使用可变参数，可以解决C语言没有重载的问题。
+3. Use fgets, then parse the string.
+4. printf, fprintf, sprintf functions
 
 ```c++
 #include <stdio.h>
@@ -878,7 +919,7 @@ int fprintf(FILE *stream, const char *format, ...);
 int sprintf(char *str, const char *format, ...);
 ```
 
-#### 10.4.6.3. Reposition a stream
+#### 10.4.7.3. Reposition a stream
 1. fseek, ftell, rewind functions
 
 ```c++
@@ -886,6 +927,7 @@ int sprintf(char *str, const char *format, ...);
 int fseek(FILE *stream, long int offset, int whence);
 long ftell(FILE *stream);
 void rewind(FILE *stream);
+// 使用文件指针的一定是C语言，而不是系统调用
 ```
 
 2. fgetpos, fsetpos functions ( Introduced in ANSI C)
@@ -896,15 +938,16 @@ int fgetpos(FILE *fp, fpos_t *pos);
 int fsetpos(FILE *fp, const fpos_t *pos);
 ```
 
-#### 10.4.6.4. Flush a stream
+#### 10.4.7.4. Flush a stream
 1. 刷新文件流。把流里的数据立刻写入文件
+2. 注意使用打印定位错误的时候可能由于没有及时刷新无法定位
 
 ```c++
 #include <stdio.h>
 int fflush(FILE *stream);
 ```
 
-#### 10.4.6.5. Stream and File Descriptor
+#### 10.4.7.5. Stream and File Descriptor
 1. 确定流使用的底层文件描述符
 
 ```c++
@@ -919,7 +962,7 @@ int fileno(FILE *fp);
 FILE *fdopen(int fildes, const char *mode);
 ```
 
-#### 10.4.6.6. Temporary File
+#### 10.4.7.6. Temporary File
 1. Create a name for a temporary file
 
 ```c++
@@ -936,12 +979,12 @@ FILE *tmpfile(void);
 //(返回值: 若成功为文件指针，若出错为NULL)
 ```
 
-#### 10.4.6.7. Advanced System Calls
+#### 10.4.7.7. Advanced System Calls
 1. Handling file attributes
    1. stat/fstat/lstat, ...
 2. Handling directory
 
-#### 10.4.6.8. stat/fstat/lstat functions
+#### 10.4.7.8. stat/fstat/lstat functions
 1. Get file status
 
 ```c++
@@ -954,7 +997,7 @@ int lstat(const char *file_name, struct stat *buf);
 //(Return: 0 if success; -1 if failure)
 ```
 
-#### 10.4.6.9. struct stat
+#### 10.4.7.9. struct stat
 1. 文件属性，实际Linux系统中的结构体字段可能有所不同。
 
 ```c++
@@ -974,23 +1017,23 @@ struct stat {
 };
 ```
 
-#### 10.4.6.10. Test macros for file types
+#### 10.4.7.10. Test macros for file types
 ![](img/lec3/21.png)
 
-#### 10.4.6.11. File Permission - Basics
+#### 10.4.7.11. File Permission - Basics
 ![](img/lec3/22.png)
 
-#### 10.4.6.12. Deep into SUID, SGID, Sticky bit
+#### 10.4.7.12. Deep into SUID, SGID, Sticky bit
 1. 用来提高权限，SUID将用户提升到root权限，SGID将group提升到root
 2. Authorization in a Linux system is based on file permissions
 3. An SUID or SGID bit on a program elevates your authorization level while running that program to the authorization level of the owner of that program
 4. Typical SUID/SGID programs are su and sudo
 
-#### 10.4.6.13. File permission(第一个0表示八进制)
+#### 10.4.7.13. File permission(第一个0表示八进制)
 ![](img/lec3/23.png)
 ![](img/lec3/24.png)
 
-#### 10.4.6.14. 获取权限
+#### 10.4.7.14. 获取权限
 1. 按**实际用户ID和实际组ID**测试文件存取权限
 
 ```c++
@@ -1001,7 +1044,7 @@ int access(const char *pathname, int mode);
 
 2. Parameter‏"mode"：R_OK(可读), W_OK(可写), X_OK(可执行), F_OK(可见)
 
-#### 10.4.6.15. chmod/fchmod functions
+#### 10.4.7.15. chmod/fchmod functions
 1. Change permissions of a file
 
 ```c++
@@ -1012,7 +1055,7 @@ int fchmod(int fildes, mode_t mode);
 // (Return: 0 if success; -1 if failure)
 ```
 
-#### 10.4.6.16. chown/fchown/lchown functions
+#### 10.4.7.16. chown/fchown/lchown functions
 1. Change ownership of a file
 
 ```c++
@@ -1024,7 +1067,7 @@ int lchown(const char *path, uid_t owner, gid_t group); // 修改软链接
 // (Return: 0 if success; -1 if failure)
 ```
 
-#### 10.4.6.17. umask function
+#### 10.4.7.17. umask function
 1. 为进程设置文件存取权限屏蔽字，并返回以前的值
 
 ```c++
@@ -1033,11 +1076,11 @@ int lchown(const char *path, uid_t owner, gid_t group); // 修改软链接
 mode_t umask(mode_t mask);
 ```
 
-#### 10.4.6.18. link/unlink functions
+#### 10.4.7.18. link/unlink functions
 1. Create a new link to (make a new name for) a file.
 ```c++
 #include <unistd.h>
-int link(const char *oldpath, const char *newpath);
+int link(const char *oldpath, const char *newpath);// newpath是软连接文件名
 // (Return: 0 if success; -1 if failure)
 ```
 
@@ -1049,7 +1092,7 @@ int unlink(const char *pathname);
 // (Return: 0 if success; -1 if failure)
 ```
 
-#### 10.4.6.19. symlink/readlink
+#### 10.4.7.19. symlink/readlink
 1. Create a symbolic link (named newpath which contains‏ the ‏string‏ "oldpath")
 ```c++
 #include <unistd.h>
@@ -1065,7 +1108,7 @@ int readlink(const char *path, char *buf, size_t bufsiz);
 // (Return: the count of characters placed in the buffer if success; -1 if failure)
 ```
 
-#### 10.4.6.20. Handling directories
+#### 10.4.7.20. Handling directories
 1. mkdir/rmdir
 2. chdir/fchdir, getcwd
 3. Read a directory:一些系统调用和命令行命令并不重名
@@ -1074,7 +1117,7 @@ int readlink(const char *path, char *buf, size_t bufsiz);
    3. telldir
    4. seekdir
 
-#### 10.4.6.21. mkdir/rmdir functions
+#### 10.4.7.21. mkdir/rmdir functions
 1. 创建一个空目录
 
 ```c++
@@ -1092,7 +1135,7 @@ int rmdir(const char *pathname);
 // (Return: 0 if success; -1 if failure)
 ```
 
-#### 10.4.6.22. chdir/fchdir functions
+#### 10.4.7.22. chdir/fchdir functions
 1. Change working directory
 
 ```c++
@@ -1104,7 +1147,7 @@ int fchdir(int fd);
 
 2. 当前工作目录是进程的属性，所以该函数只影响调用 chdir的进程本身:`cd(1) command`
 
-#### 10.4.6.23. getcwd function
+#### 10.4.7.23. getcwd function
 1. 获得当前工作目录的绝对路径
 
 ```c++
@@ -1113,7 +1156,7 @@ char *getcwd(char *buf, size_t size);
 // (返回值: 若成功则为buf，若出错则为NULL)
 ```
 
-#### 10.4.6.24. Read a directory
+#### 10.4.7.24. Read a directory
 1. Data structures
    1. DIR(类型别名), struct dirent
 2. Operations
@@ -1122,7 +1165,7 @@ char *getcwd(char *buf, size_t size);
    3. telldir
    4. seekdir
 
-#### 10.4.6.25. Data structures
+#### 10.4.7.25. Data structures
 1. DIR
    1. The data type of directory stream objects
    2. in `<dirent.h>`
@@ -1136,7 +1179,7 @@ ino_t d_ino; /* inode number */
 char d_name[NAME_MAX + 1]; /* file name */
 ```
 
-#### 10.4.6.26. Operations
+#### 10.4.7.26. Operations
 1. 目录的打开、关闭、读、定位
 
 ```c++
@@ -1149,7 +1192,7 @@ off_t telldir(DIR *dir);// 查看当前目录项的偏移量
 void seekdir(DIR *dir, off_t offset); // 跳转至下一个目录项，可指定偏移量
 ```
 
-#### 10.4.6.27. 一个目录扫描程序
+#### 10.4.7.27. 一个目录扫描程序
 ```c++
 DIR *dp;
 struct dirent *entry;
