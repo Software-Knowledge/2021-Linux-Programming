@@ -46,7 +46,7 @@ Lec4-Kernel Driver
 4. make modules
 
 ## 3.4. 启用新内核
-1. make install(慎用)
+1. make install(慎用)
    1. 将编译好的内核copy到/boot
 2. 配置引导菜单
 

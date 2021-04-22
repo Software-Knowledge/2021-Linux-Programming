@@ -396,7 +396,8 @@ bar.o : bar.c
 ```makefile
 objects = foo.o bar.o
 all: $(objects)
-$(objects): %.o: %.c$(CC) -c $(CFLAGS) $< -o $@
+$(objects): %.o: %.
+   c$(CC) -c $(CFLAGS) $< -o $@
 ```
 
 5. 目标从$object中获取
@@ -744,7 +745,7 @@ int setvbuf(FILE *stream，char * buf, int mode, size_t size); // 类型: _IOFBF
 ```
 
 1. 补充：
-   1. setbuf用于打开或关闭流缓冲机制，参数buf指向一个长度为BUFSIZ（该常量在<stdio.h>中定义）的缓冲区；如果要关闭缓冲，则将buf设置为NULL即可。
+   1. setbuf用于打开或关闭流缓冲机制，参数buf指向一个长度为BUFSIZ（该常量在`<stdio.h>`中定义）的缓冲区；如果要关闭缓冲，则将buf设置为NULL即可。
    2. setvbuf用于精确地设置所需的缓冲类型，mode取值如下：_IOFBF(全缓冲)/_IOLBF(行缓冲)/_IONBF(无缓冲)；如果指定了mode为带缓冲类型，而buf却为NULL，则系统会自动分配BUFSIZ个字节的缓冲区。
 
 ### 10.4.6. 标准I/O函数
