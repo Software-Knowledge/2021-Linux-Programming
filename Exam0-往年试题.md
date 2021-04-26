@@ -19,15 +19,15 @@ Exam0-往年试题
 ![](img/exam0/1.png)
 
 11. 【2017】几个特殊符号
-   1. SIGHUP连接挂断
-   2. SIGINT终端中断
-   3. SIGKILL终止进程（此信号不能被捕获或忽略）
-   4. SIGQUIT终端退出
-   5. SIGTERM终止
-   6. SIGCHLD子进程已经停止或退出
-   7. SIGCONT继续执行暂停进程
-   8. SIGSTOP停止执行（此信号不能被捕获或忽略）
-   9. SIGTSTP终端挂起
+       1. SIGHUP连接挂断
+       2. SIGINT终端中断
+       3. SIGKILL终止进程（此信号不能被捕获或忽略）
+       4. SIGQUIT终端退出
+       5. SIGTERM终止
+       6. SIGCHLD子进程已经停止或退出
+       7. SIGCONT继续执行暂停进程
+       8. SIGSTOP停止执行（此信号不能被捕获或忽略）
+       9. SIGTSTP终端挂起
 12. 【2017】I/O库函数三种缓存(全缓存、行缓存、不带缓存)
 13. 【2017】大多数UNIX系统都提供了(mmap机制或存储映射I/O)，可以在不使用read/write的情况下执行I/O
 
@@ -87,7 +87,7 @@ int symlink(const char *oldpath, const char *newpath);
       1. `gcc -c test.c -o test.o
       2. `gcc test.o -o test -WI -Bdynamic -lh`:-WI -Bdynamic表示链接动态库，-lh中-l表示链接，h是库名即/usr/lib下的libh.so
    6. 运行./test得到结果
-7. 【2017】什么是shell内部命令；试距离说明，并说明该命令为什么是内部命令
+7. 【2017】什么是shell内部命令；试举例说明，并说明该命令为什么是内部命令
    1. bash命令解释套装程序包含了一些内部命令，这些内部命令在目录列表无法看到，而是由shell本身提供。
    2. bash的内部命令：alias、bg、fg、builtin、break、exit、let、kill、export、hash、jobs、set、umask、test、type、ulimit。可以man bash，然后搜索"SHELL BULTIN COMMANDS"即可查看内部命令
       1. echo：在屏幕上显示出子串
@@ -250,6 +250,10 @@ void bindiff(char *file1, char *file2, char *fileo)
    8. 管道
    9. 重定向
 10. 【2018】使用系统调用实现函数half(a, b)将a文件的一般拷贝到b文件，且b仅包含a文件的后一半的内容
+
+```c++
+#include<uintsid.h>
+```
 
  
  

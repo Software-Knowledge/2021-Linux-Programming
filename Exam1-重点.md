@@ -75,6 +75,9 @@ make install
    2. 方法2：`chmod +x script_file`授予文件可执行权限；`./script_file`，Shell新建进程运行
    1. 方法3：`source script_file`；`.script_file`，Shell使用本进程运行
 3. 不同类型的Shell
+
+![](img/exam1/6.png)
+
 4. shell和虚拟终端是不同的，一台电脑只有一个console，但是可以划分很多虚拟终端，虚拟中断是从console模拟出来的。
    1. `VT 1-6`文本模式登陆
    2. `VT 7`图形模式登陆提示
@@ -178,7 +181,7 @@ make install
 6. 如果希望对stdin和stdout都重定向，可以这样写：command < file1 > file2；command命令将stdin重定向到file1，将stdout重定向到file2。
 
 ## 2.4. 管道 掌握
-1. 将一个进程的输入作为另一个进程的输入
+1. 将一个进程的输出作为另一个进程的输入
 2. 上一个操作的标注输出指的是上一个命令在一系列重定向操作之后的仍然会输出到stdout的文件描述符
 
 ## 2.5. 环境变量 掌握
@@ -380,12 +383,12 @@ func para1 para2 # 函数内部调用$1 $2 得不到脚本参数，而是调用�
    12. `${param#word}`：从param的头部开始删除与word匹配的最小部分，然后返回剩余部分
    13. `${param##word}`：从param的头部开始删除与word匹配的最长部分，然后返回剩余部分
    14. `${var_name:x:y}`，提取var_name的值
-      1. 如果x
-         1. 是非负数：从左侧开始第x个字节开始
-         2. 是负数：
-      2. 如果y
-         1. 是非负数：的连续y个字节的内容
-         2. 是负数：到从右侧开始数y个字节的内容
+          1. 如果x
+             1. 是非负数：从左侧开始第x个字节开始
+             2. 是负数：
+          2. 如果y
+             1. 是非负数：的连续y个字节的内容
+             2. 是负数：到从右侧开始数y个字节的内容
    15. `${var_name/regex/sub}`，替换var_name中的内容，语法和sed及vim的替换指令一样，只替换一次
    16. `${var_name/regex/sub}`，替换var_name中的内容，语法和sed及vim的替换指令一样，替换全部
 
@@ -411,6 +414,14 @@ func para1 para2 # 函数内部调用$1 $2 得不到脚本参数，而是调用�
    11. `-DMACRO[=DEFN]`：定义MACRO宏，比如`gcc -DAA=2`相当于源码中添加了#define AA 2
 3. g++ C++对应命令
 
+```sh
+gcc –o hello hello.c ： 将hello.c文件编译成hello的可执行文件
+gcc –c hello.c ： 将hello.c文件生成hello.o文件 gcc -E hello.c ： 只是激活预处理，不生成文档，需要把它重定向到另外一个文档里
+gcc –S hello.c ： 将hello.c文件生成hello.s文件的汇编代码
+gcc –pipe –o hello hello.c ： 使用管道代替编译中临时文档
+gcc hello.c –include /root/hello.h ：包含某个代码，简单来说，就是以某个文档，需要另外一个文档的时候，就能够用它设定，功能就相当于在代码中使
+```
+
 ## 3.2. gdb
 1. `file` 打开要调试的文件
 2. `break/tbreak` 设置调试
@@ -431,14 +442,19 @@ func para1 para2 # 函数内部调用$1 $2 得不到脚本参数，而是调用�
 3. 打包后得到了.a静态库文件
 
 ## 3.4. 静态库和动态库
-1. 静态库：编译链接时，把库文件的代码全部加入可执行文件中，因此生成的文件比较大，但是运行时也就不需要库文件了，后缀名一般为`.a`
+1. 二者的不同点在于代码被载入的时刻不同。
+   1. 静态库的代码在编译过程中已经被载入可执行程序，因此体积比较大。
+   2. 动态库(共享库)的代码在可执行程序运行时才载入内存，在编译过程中仅简单的引用，因此代码体积比较小。
+   3. 不同的应用程序如果调用相同的库，那么在内存中只需要有一份该动态库(共享库)的实例。
+   4. 静态库和动态库的最大区别：静态情况下，把库直接加载到程序中，而动态库链接的时候，它只是保留接口，将动态库与程序代码独立，这样就可以提高代码的可复用度，和降低程序的耦合度。
+2. 静态库：编译链接时，把库文件的代码全部加入可执行文件中，因此生成的文件比较大，但是运行时也就不需要库文件了，后缀名一般为`.a`
    1. 为什么需要静态库：通过静态库的方式降低复杂度，在升级更新时尽量做到增量更新，但是静态库会导致复用性降低，磁盘占用高。
-2. 动态库：在编译链接时并没有把库文件的代码加入可执行文件中，而是在程序执行时由运行时链接文件加载库，这样可以节省系统的开销，后缀名一般为`.so`。
+3. 动态库：在编译链接时并没有把库文件的代码加入可执行文件中，而是在程序执行时由运行时链接文件加载库，这样可以节省系统的开销，后缀名一般为`.so`。
    1. 动态库的作用
       1. 库文件不在可执行文件中，放置在外侧
       2. 升级更新会方便快捷
       3. 动态库会存在冲突(版本问题)
-3. gcc/g++在编译时默认使用动态库。无论静态库还是动态库，都是由.o文件构成的
+4. gcc/g++在编译时默认使用动态库。无论静态库还是动态库，都是由.o文件构成的
 
 ## 3.5. Makefile
 1. Makefile描述模块间的依赖关系，会记录所有文件的信息，在make时决定链接时需要重新编译哪些
@@ -503,9 +519,9 @@ OBJS = hello.o # make uninstall之后系统中源代码仍然存在
 
 all: $(EXEC) # 默认执行make all
   $(EXEC): $(OBJS)
-  $(CC) $(LDFLAGS) -0 $@ $(OBJS) $(EXTRA_ LIBS) # gcc的别名CC，$@明确了目标文件放置位置
+  $(CC) $(LDFLAGS) -0 $@ $(OBJS) $(EXTRA_LIBS) # gcc的别名CC，$@明确了目标文件放置位置
 install:
-  $(EXP_ INSTALL) $(EXEC) $(INSTALL_ DIR) # make install执行的指定目标
+  $(EXP_INSTALL) $(EXEC) $(INSTALL_ DIR) # make install执行的指定目标
 clean:
   -rm -f $(EXEC) *.elf*.gdb *.o
 ```
@@ -524,7 +540,7 @@ clean:
 ## 4.1. 文件和文件系统
 1. 文件：是数据的集合，可以写入、读取或两者兼有的对象(文件具有某些属性，包括访问权限和类型)。逻辑上是字节，文件必然是整数字节。
 2. 文件结构：字节流(Linux)、记录序列、记录树
-3. 文件系统：操作系统中负责访问和管理文件的部分，是文件及其某种属性的集合，为引用中这文件的文件序列号提供了名称空间。
+3. 文件系统：操作系统中负责访问和管理文件的部分，是文件及其某种属性的集合，为引用文件的文件序列号提供了名称空间。
    1. 一种特定的文件格式
    2. 指按指定格式进行格式化的一块存储介质
    3. 指操作系统中(通常内核中)用来管理文件系统以及对文件进行操作的机制及其实现
@@ -596,7 +612,7 @@ clean:
 1. 超级块(super block)：某一个磁盘的某一个分区的文件系统的信息，记录了文件系统类型和参数。
 2. i-node 对象(i-node object)：记录真正的文件，文件存储在磁盘上时是按照索引号访问文件的，软链接是不同的文件，但是硬链接是相同的inode号，同一个文件。
 3. 文件对象(file object)：记录了文件描述符、索引号，不对应真正的文件，文件打开会创建出文件对象，文件关闭才会释放内核中的文件对象。记录了文件的读写状态。
-4. 目录对象(dentry object)：维护了目录中的逻辑关系，若要通过目录来查找文件，额需要这个对象。在路径上，无论是目录还是文件，都是一个dentry对象对应到目录包含的i-node上，目录项包括索引节点编号，目录项名称长度以及名称。
+4. 目录对象(dentry object)：维护了目录中的逻辑关系，若要通过目录来查找文件，都需要这个对象。在路径上，无论是目录还是文件，都是一个dentry对象对应到目录包含的i-node上，目录项包括索引节点编号，目录项名称长度以及名称。
 
 ## 4.4. 硬链接和软链接 掌握
 1. 硬链接
@@ -661,25 +677,25 @@ int main(){
 4. int close(int fd) 关闭文件描述符，释放资源
 5. size_t read(int fd, void *buf, size_t count) 返回值为读到的字节数，如果已经到文件尾为0，若出错为-1
 6. size_t write(int fd, const void *buf, size_t count) 返回值为已经成功写的字节数，若出错为-1
-7.  STDIN_FIFENO(0) 标准输入
-8.  STDOUT_FIFENO(1) 标准输出
-9.  STDERR_FIFENO(2) 标准错误
-10. off_t lseek(int fildes, off_t offset, int whence)：如果成功返回偏移地址，否则为-1
+   1. STDIN_FIFENO(0) 标准输入
+   2. STDOUT_FIFENO(1) 标准输出
+   3. STDERR_FIFENO(2) 标准错误
+7. off_t lseek(int fildes, off_t offset, int whence)：如果成功返回偏移地址，否则为-1
     1. SEEK_SET：从头偏移offset
     2. SEEK_CUR：从当前偏移offset
     3. SEEK_END：从尾偏移offset
-11. int dup(int oldfd) 提供一种复制文件描述符的方法，我们可以用两个或多个描述符来访问同一个文件。作用:复制文件描述符。dup产生一个相同的文件描述符指向同一个文件: 
+8. int dup(int oldfd) 提供一种复制文件描述符的方法，我们可以用两个或多个描述符来访问同一个文件。作用:复制文件描述符。dup产生一个相同的文件描述符指向同一个文件: 
     1.  `fd2 = dup(STDOUT_FILENO)` 保存标准输出
-12. int dup2(int oldfd, int newfd) 如果成功返回一个文件描述符。dup2复制一个旧的文件描述符到新的文件描述符,使得新的文件描述符与旧的文件描述符完全一样， 过程主要是先关闭新的文件描述符对应的文件，然后进行复制
-13. int link(const char* oldpath, const char* newpath) 创建文件的一个新连接
-14. int unlink(const char *pathname)删除文件名和可能的引用文件
-15. int symlink(const char *pathname, const char *newpath)创建一个符号链接
-16. int readlink(const char *path, char *buf, size_t bufsiz) 从符号链接中读取值
-17. int access(const char* pathname, int mode) 按实际用户ID和实际组ID测试文件的存取权限，mode为R_OK，W_OK，X_OK，F_OK(文件是否存在)
-18. int chown(const char *path, uid_t owner, gid_t group)
-19. int fchown(int fd, uid_t owner, gid_t group)
-20. int lchown(const char *path, uid_t owner, gid_t group)
-21. char *getcwd(char *buf, size_t size) 获取绝对路径
+9. int dup2(int oldfd, int newfd) 如果成功返回一个文件描述符。dup2复制一个旧的文件描述符到新的文件描述符，使得新的文件描述符与旧的文件描述符完全一样，过程主要是先关闭新的文件描述符对应的文件，然后进行复制
+10. int link(const char* oldpath, const char* newpath) 创建文件的一个新连接
+11. int unlink(const char *pathname)删除文件名和可能的引用文件
+12. int symlink(const char *pathname, const char *newpath)创建一个符号链接
+13. int readlink(const char *path, char *buf, size_t bufsiz) 从符号链接中读取值
+14. int access(const char* pathname, int mode) 按实际用户ID和实际组ID测试文件的存取权限，mode为R_OK，W_OK，X_OK，F_OK(文件是否存在)
+15. int chown(const char *path, uid_t owner, gid_t group)
+16. int fchown(int fd, uid_t owner, gid_t group)
+17. int lchown(const char *path, uid_t owner, gid_t group)
+18. char *getcwd(char *buf, size_t size) 获取绝对路径
 
 #### 4.5.2.2. 头文件`<sys/types.h>`
 
@@ -692,7 +708,6 @@ int main(){
    3. F_GETFL/F_SETFL:获得/设置文件状态标志(open/creat中的flags 参数)，目前只能更改0_APPEND , 0_ASYNC, 0_DIRECT, 0_NOATIME,O_NONBLOCK
    4. F_GETOWN/F_SETOWN: 管理1/0可用相关的信号。获得或设置当前文件描述符会接受SIGI0和SIGURG信号的进程或进程组编号F_GETLK/F_SETLK/F_SETLKW: 获得/设置文件锁,设置为F_GETLK时需要传入flock* 指针用于存放最后的锁信息。S_SETLK 需要传入flock *指针表示需要改变的锁的内容,如果不能被设置,则立即返回EAGAIN。
    5. s_SETLKW同s_SETLK，但是在锁无法设置时会阻塞等待任务完成。
-
 
 #### 4.5.2.4. 头文件`<sys/stat.h>`
 1. `int stat(const char *filename, struct stat *buf); `
@@ -755,9 +770,9 @@ dup2(savefd, STDOUT_FIFENO); // STDOUT_FIFENO(1)恢复指向savefd
    2. 预定义的指针：stdin，stdout，stderr
 2. 缓冲I/O
    1. 三种类型的缓冲
-      1. 全缓冲
-      2. 行缓冲
-      3. 空缓冲
+      1. 全缓冲 全缓冲指的是系统在填满标准IO缓冲区之后才进行实际的IO操作；注意，对于驻留在磁盘上的文件来说通常是由标准IO库实施全缓冲。
+      2. 行缓冲 在这种情况下，标准IO在输入和输出中遇到换行符时执行IO操作；注意，当流涉及终端的时候，通常使用的是行缓冲。
+      3. 无缓冲 无缓冲指的是标准IO库不对字符进行缓冲存储；注意，标准出错流stderr通常是无缓冲的。
 
 ### 4.7.2. 流操作：头文件`#include <stdio.h>`
 1. `FILE *fopen(const char * filename, const char* mode);`
